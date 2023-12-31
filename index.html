@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -383,9 +383,9 @@
                   ...commit,
                   repoName: name,
                   color,
-                }))
-              )
-          )
+                })),
+              ),
+          ),
         )
           .then((data) => {
             // Flatten the array since Promise.all results in an array of arrays
@@ -394,7 +394,7 @@
             // Sorting combinedData by date
             combinedData = combinedData.sort(
               (a, b) =>
-                new Date(a.commit.author.date) - new Date(b.commit.author.date)
+                new Date(a.commit.author.date) - new Date(b.commit.author.date),
             );
 
             // If not sorted in ascending order, reverse the array
