@@ -1,479 +1,514 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GitHub Commits Widget</title>
     <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #000;
+        background-color: #fff;
+      }
+
+      .commits-container {
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+
+      .commits-container h3 img {
+        margin-right: 10px;
+      }
+
+      .commits-container ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .commits-container ul li {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .commits-container ul li:last-child {
+        border-bottom: none;
+      }
+
+      .commit {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .commit-user {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 90%;
+      }
+
+      .commit-img {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+      }
+
+      .commit-msg {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 90%;
+      }
+
+      .commit-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .repo-chip {
+        background-color: #eee;
+        border-radius: 5px;
+        padding: 2px 6px;
+        font-size: 0.8em;
+        margin-left: 10px;
+        align-self: center;
+        margin-right: 10px;
+        white-space: nowrap;
+      }
+
+      .open-link {
+        text-decoration: none;
+        color: black;
+      }
+
+      .open-icon {
+        background: url("https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/open_in_new/default/24px.svg")
+          no-repeat center;
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        background-size: 100% 100%;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .title {
+        display: flex;
+        align-items: center;
+      }
+
+      .github-logo {
+        width: 30px;
+        height: 30px;
+      }
+
+      .title h3 {
+        padding-left: 10px;
+      }
+
+      #filter-button,
+      #sort-button {
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+      }
+
+      #sort-button img,
+      #filter-button img {
+        width: 24px;
+        height: 24px;
+      }
+
+      @keyframes color {
+        0% {
+          box-shadow: 0 0 20px 05px rgba(0, 0, 0, 0.5);
+        }
+
+        50% {
+          box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        100% {
+          box-shadow: 0 0 20px 05px rgba(0, 0, 0, 0.5);
+        }
+      }
+
+      .modal {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: #000;
+        background-color: white;
+        z-index: 1000;
+        width: 500px;
+        max-width: 80%;
+        display: none;
+        border-radius: 5px;
+        box-shadow: 0 0 20px 05px rgba(0, 0, 0, 0.5);
+        animation: color 10s infinite;
+      }
+
+      .modal-header {
+        background-color: #f1f1f1;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+      }
+
+      .modal-body {
+        padding: 10px 15px;
+      }
+
+      #radioContainer {
+        display: flex;
+        flex-direction: column;
+        width: max-content;
+      }
+
+      #radioContainer a {
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        color: black;
+      }
+
+      .buttons {
+        display: flex;
+        align-items: center;
+      }
+
+      .reset-button,
+      .close-button {
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+        height: 24px;
+        width: 24px;
+      }
+
+      /* Dark theme */
+      @media (prefers-color-scheme: dark) {
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #000;
-            background-color: #fff;
+          background-color: #000;
+          color: #fff;
         }
 
         .commits-container {
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
-
-        .commits-container h3 img {
-            margin-right: 10px;
-        }
-
-        .commits-container ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .commits-container ul li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .commits-container ul li:last-child {
-            border-bottom: none;
-        }
-
-        .commit {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .commit-user {
-            display: flex;
-            align-items: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 90%;
-        }
-
-        .commit-img {
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            margin-right: 10px;
-        }
-
-        .commit-msg {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 90%;
-        }
-
-        .commit-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .repo-chip {
-            background-color: #eee;
-            border-radius: 5px;
-            padding: 2px 6px;
-            font-size: .8em;
-            margin-left: 10px;
-            align-self: center;
-            margin-right: 10px;
-            white-space: nowrap;
+          border: 1px solid #333;
         }
 
         .open-link {
-            text-decoration: none;
-            color: black;
-        }
-
-        .open-icon {
-            background: url("https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/open_in_new/default/24px.svg") no-repeat center;
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            background-size: 100% 100%;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .title {
-            display: flex;
-            align-items: center;
-        }
-
-        .github-logo {
-            width: 30px;
-            height: 30px;
-        }
-
-        .title h3 {
-            padding-left: 10px;
-        }
-
-        #filter-button,
-        #sort-button {
-            border: none;
-            background-color: transparent;
-            cursor: pointer;
-        }
-
-        #sort-button img,
-        #filter-button img {
-            width: 24px;
-            height: 24px;
+          color: #fff;
         }
 
         @keyframes color {
-            0% {
-                box-shadow: 0 0 20px 05px rgba(0, 0, 0, .5);
-            }
+          0% {
+            box-shadow: 0 0 20px 05px rgba(255, 255, 255, 0.5);
+          }
 
-            50% {
-                box-shadow: 0 0 20px 10px rgba(0, 0, 0, .5);
-            }
+          50% {
+            box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.5);
+          }
 
-            100% {
-                box-shadow: 0 0 20px 05px rgba(0, 0, 0, .5);
-            }
+          100% {
+            box-shadow: 0 0 20px 05px rgba(255, 255, 255, 0.5);
+          }
         }
 
         .modal {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            color: #000;
-            background-color: white;
-            z-index: 1000;
-            width: 500px;
-            max-width: 80%;
-            display: none;
-            border-radius: 5px;
-            box-shadow: 0 0 20px 05px rgba(0, 0, 0, .5);
-            animation: color 10s infinite;
+          box-shadow: 0 0 20px 05px rgba(255, 255, 255, 0.5);
+          animation: color 10s infinite;
+          background-color: #000;
+          color: #fff;
         }
 
         .modal-header {
-            background-color: #f1f1f1;
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
+          background-color: #333;
         }
 
-        .modal-body {
-            padding: 10px 15px;
-        }
-
-        #radioContainer {
-            display: flex;
-            flex-direction: column;
-            width: max-content;
-        }
-
-        #radioContainer a {
-            padding: 10px;
-            border-radius: 5px;
-            text-decoration: none;
-            color: black;
-        }
-
-        .buttons {
-            display: flex;
-            align-items: center;
-        }
-
+        .github-logo,
+        .open-icon,
+        #sort-button,
+        #filter-button,
         .reset-button,
         .close-button {
-            border: none;
-            background-color: transparent;
-            cursor: pointer;
-            height: 24px;
-            width: 24px;
+          filter: invert(1);
         }
-
-        /* Dark theme */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #000;
-                color: #fff;
-            }
-
-            .commits-container {
-                border: 1px solid #333;
-            }
-
-            .open-link {
-                color: #fff;
-            }
-
-            @keyframes color {
-                0% {
-                    box-shadow: 0 0 20px 05px rgba(255, 255, 255, .5);
-                }
-
-                50% {
-                    box-shadow: 0 0 20px 10px rgba(255, 255, 255, .5);
-                }
-
-                100% {
-                    box-shadow: 0 0 20px 05px rgba(255, 255, 255, .5);
-                }
-            }
-
-            .modal {
-                box-shadow: 0 0 20px 05px rgba(255, 255, 255, .5);
-                animation: color 10s infinite;
-                background-color: #000;
-                color: #fff;
-            }
-
-            .modal-header {
-                background-color: #333;
-            }
-
-            .github-logo,
-            .open-icon,
-            #sort-button,
-            #filter-button,
-            .reset-button,
-            .close-button {
-                filter: invert(1);
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="commits-container">
-        <div class="header">
-            <div class="title">
-                <img class="github-logo" src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-                    alt="Github Logo" />
-                <h3>Latest Commits</h3>
-            </div>
-            <div class="buttons">
-                <button id="filter-button">
-                    <img src="https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/filter_list/default/24px.svg"
-                        alt="Filter Icon">
-                </button>
-                <!-- Modal Section -->
-                <div id="modal" class="modal">
-                    <div class="modal-header">
-                        <div class="title">Select a filter</div>
-                        <div class="buttons">
-                            <button class="reset-button">
-                                <img src="https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/restart_alt/default/24px.svg"
-                                    alt="Reset Icon">
-                            </button>
-                            <button class="close-button">
-                                <img src="https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/close_small/default/24px.svg"
-                                    alt="Close Icon">
-                            </button>
-                        </div>
-                    </div>
-                    <div class="modal-body" id="radioContainer"></div>
-                </div>
-                <button id="sort-button">
-                    <img src="https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/sort/default/24px.svg"
-                        alt="Sort Icon">
-                </button>
-            </div>
+      <div class="header">
+        <div class="title">
+          <img
+            class="github-logo"
+            src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+            alt="Github Logo"
+          />
+          <h3>Latest Commits</h3>
         </div>
-        <ul id="commits-list"></ul>
+        <div class="buttons">
+          <button id="filter-button">
+            <img
+              src="https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/filter_list/default/24px.svg"
+              alt="Filter Icon"
+            />
+          </button>
+          <!-- Modal Section -->
+          <div id="modal" class="modal">
+            <div class="modal-header">
+              <div class="title">Select a filter</div>
+              <div class="buttons">
+                <button class="reset-button">
+                  <img
+                    src="https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/restart_alt/default/24px.svg"
+                    alt="Reset Icon"
+                  />
+                </button>
+                <button class="close-button">
+                  <img
+                    src="https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/close_small/default/24px.svg"
+                    alt="Close Icon"
+                  />
+                </button>
+              </div>
+            </div>
+            <div class="modal-body" id="radioContainer"></div>
+          </div>
+          <button id="sort-button">
+            <img
+              src="https://fonts.gstatic.com/s/i/short-term/release/materialsymbolsoutlined/sort/default/24px.svg"
+              alt="Sort Icon"
+            />
+          </button>
+        </div>
+      </div>
+      <ul id="commits-list"></ul>
     </div>
     <script>
-        const commitList = document.getElementById('commits-list');
-        const sortButton = document.getElementById('sort-button');
-        const filterButton = document.getElementById('filter-button');
-        let sortAsc = false; // By default, sort in descending order
+      const commitList = document.getElementById("commits-list");
+      const sortButton = document.getElementById("sort-button");
+      const filterButton = document.getElementById("filter-button");
+      let sortAsc = false; // By default, sort in descending order
 
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }
-        function colorDistance(color1, color2) {
-            let rgb1 = hexToRgb(color1);
-            let rgb2 = hexToRgb(color2);
+      function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result
+          ? {
+              r: parseInt(result[1], 16),
+              g: parseInt(result[2], 16),
+              b: parseInt(result[3], 16),
+            }
+          : null;
+      }
+      function colorDistance(color1, color2) {
+        let rgb1 = hexToRgb(color1);
+        let rgb2 = hexToRgb(color2);
 
-            let rmean = (rgb1.r + rgb2.r) / 2;
-            let r = rgb1.r - rgb2.r;
-            let g = rgb1.g - rgb2.g;
-            let b = rgb1.b - rgb2.b;
-            let weightR = 2 + rmean / 256;
-            let weightG = 4.0;
-            let weightB = 2 + (255 - rmean) / 256;
-            return Math.sqrt(weightR * r * r + weightG * g * g + weightB * b * b);
-        }
-        function getRandomColor() {
-            return '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0');
-        }
-        let color1 = getRandomColor();
-        let color2 = getRandomColor();
-        while (colorDistance(color1, color2) < 50) {
-            color2 = getRandomColor();
-        }
+        let rmean = (rgb1.r + rgb2.r) / 2;
+        let r = rgb1.r - rgb2.r;
+        let g = rgb1.g - rgb2.g;
+        let b = rgb1.b - rgb2.b;
+        let weightR = 2 + rmean / 256;
+        let weightG = 4.0;
+        let weightB = 2 + (255 - rmean) / 256;
+        return Math.sqrt(weightR * r * r + weightG * g * g + weightB * b * b);
+      }
+      function getRandomColor() {
+        return (
+          "#" +
+          Math.floor(Math.random() * 0xffffff)
+            .toString(16)
+            .padStart(6, "0")
+        );
+      }
+      let color1 = getRandomColor();
+      let color2 = getRandomColor();
+      while (colorDistance(color1, color2) < 50) {
+        color2 = getRandomColor();
+      }
 
-        // Define your repos here
-        const repoNames = [
-            { url: 'https://api.github.com/repos/Jonnil/Sticky-Paws-DX/commits', name: 'Sticky-Paws-DX', color: color1 },
-            { url: 'https://api.github.com/repos/AnalogCyan/Sticky-Paws-Server/commits', name: 'Sticky-Paws-Server', color: color2 }
-        ];
-        let filteredRepos = repoNames;
+      // Define your repos here
+      const repoNames = [
+        {
+          url: "https://api.github.com/repos/Jonnil/Sticky-Paws-DX/commits",
+          name: "Sticky-Paws-DX",
+          color: color1,
+        },
+        {
+          url: "https://api.github.com/repos/AnalogCyan/Sticky-Paws-Server/commits",
+          name: "Sticky-Paws-Server",
+          color: color2,
+        },
+      ];
+      let filteredRepos = repoNames;
 
-        function getBrightness(color) {
-            const rgb = parseInt(color.slice(1), 16);   // Remove '#' and convert to number
-            const r = (rgb >> 16) & 0xff;  // Get red value
-            const g = (rgb >> 8) & 0xff;  // Get green value
-            const b = (rgb >> 0) & 0xff;  // Get blue value
+      function getBrightness(color) {
+        const rgb = parseInt(color.slice(1), 16); // Remove '#' and convert to number
+        const r = (rgb >> 16) & 0xff; // Get red value
+        const g = (rgb >> 8) & 0xff; // Get green value
+        const b = (rgb >> 0) & 0xff; // Get blue value
 
-            // Calculate brightness
-            return (r * 299 + g * 587 + b * 114) / 1000;
-        }
+        // Calculate brightness
+        return (r * 299 + g * 587 + b * 114) / 1000;
+      }
 
-        const fetchAndDisplayCommits = () => {
-            Promise.all(filteredRepos.map(({ url, name, color }) =>
-                fetch(url).then(resp => resp.json())
-                    .then(data => data.map(commit => ({
-                        ...commit,
-                        repoName: name,
-                        color
-                    })))
-            ))
-                .then(data => {
-                    // Flatten the array since Promise.all results in an array of arrays
-                    let combinedData = [].concat(...data);
+      const fetchAndDisplayCommits = () => {
+        Promise.all(
+          filteredRepos.map(({ url, name, color }) =>
+            fetch(url)
+              .then((resp) => resp.json())
+              .then((data) =>
+                data.map((commit) => ({
+                  ...commit,
+                  repoName: name,
+                  color,
+                })),
+              ),
+          ),
+        )
+          .then((data) => {
+            // Flatten the array since Promise.all results in an array of arrays
+            let combinedData = [].concat(...data);
 
-                    // Sorting combinedData by date
-                    combinedData = combinedData.sort((a, b) => new Date(a.commit.author.date) - new Date(b.commit.author.date));
+            // Sorting combinedData by date
+            combinedData = combinedData.sort(
+              (a, b) =>
+                new Date(a.commit.author.date) - new Date(b.commit.author.date),
+            );
 
-                    // If not sorted in ascending order, reverse the array
-                    if (!sortAsc) {
-                        combinedData.reverse();
-                    }
+            // If not sorted in ascending order, reverse the array
+            if (!sortAsc) {
+              combinedData.reverse();
+            }
 
-                    // Clear the list before appending new items
-                    commitList.innerHTML = '';
+            // Clear the list before appending new items
+            commitList.innerHTML = "";
 
-                    combinedData.forEach(commit => {
-                        const listItem = document.createElement('li');
-                        const commitUser = document.createElement('div');
-                        const userImage = document.createElement('img');
-                        const commitMessage = document.createElement('p');
-                        const commitMeta = document.createElement('div');
-                        listItem.className = 'commit';
-                        commitUser.className = 'commit-user';
-                        userImage.className = 'commit-img';
-                        userImage.src = commit.author ? commit.author.avatar_url : '';
-                        userImage.alt = 'User Image';
-                        commitMessage.className = 'commit-msg';
-                        commitMessage.innerText = commit.commit.message;
-                        commitMeta.className = 'commit-meta';
+            combinedData.forEach((commit) => {
+              const listItem = document.createElement("li");
+              const commitUser = document.createElement("div");
+              const userImage = document.createElement("img");
+              const commitMessage = document.createElement("p");
+              const commitMeta = document.createElement("div");
+              listItem.className = "commit";
+              commitUser.className = "commit-user";
+              userImage.className = "commit-img";
+              userImage.src = commit.author ? commit.author.avatar_url : "";
+              userImage.alt = "User Image";
+              commitMessage.className = "commit-msg";
+              commitMessage.innerText = commit.commit.message;
+              commitMeta.className = "commit-meta";
 
-                        // Create a chip
-                        const chip = document.createElement('span');
-                        chip.textContent = commit.repoName;
-                        chip.className = 'repo-chip';
-                        chip.style.backgroundColor = commit.color;
-                        chip.style.color = getBrightness(commit.color) > 155 ? 'black' : 'white';
-                        chip.style.fontWeight = 'bold';
+              // Create a chip
+              const chip = document.createElement("span");
+              chip.textContent = commit.repoName;
+              chip.className = "repo-chip";
+              chip.style.backgroundColor = commit.color;
+              chip.style.color =
+                getBrightness(commit.color) > 155 ? "black" : "white";
+              chip.style.fontWeight = "bold";
 
-                        // Create an open link
-                        const openLink = document.createElement('a');
-                        openLink.href = commit.html_url;
-                        openLink.target = '_blank';
-                        openLink.title = 'Open commit on GitHub';
-                        openLink.className = 'open-link';
+              // Create an open link
+              const openLink = document.createElement("a");
+              openLink.href = commit.html_url;
+              openLink.target = "_blank";
+              openLink.title = "Open commit on GitHub";
+              openLink.className = "open-link";
 
-                        const openIcon = document.createElement('span');
-                        openIcon.className = 'open-icon';
-                        openLink.appendChild(openIcon);
+              const openIcon = document.createElement("span");
+              openIcon.className = "open-icon";
+              openLink.appendChild(openIcon);
 
-                        commitUser.appendChild(userImage);
-                        commitUser.appendChild(commitMessage);
+              commitUser.appendChild(userImage);
+              commitUser.appendChild(commitMessage);
 
-                        commitMeta.appendChild(chip);
-                        commitMeta.appendChild(openLink);
+              commitMeta.appendChild(chip);
+              commitMeta.appendChild(openLink);
 
-                        listItem.appendChild(commitUser);
-                        listItem.appendChild(commitMeta);
-                        commitList.appendChild(listItem);
-                    });
-                })
-                .catch((error) => console.error('Error:', error));
-        };
-
-        // Initialise commit list
-        fetchAndDisplayCommits();
-
-        // Handle filter button click
-        filterButton.addEventListener('click', () => {
-            const modal = document.getElementById('modal');
-            const radioContainer = document.getElementById('radioContainer');
-            radioContainer.innerHTML = '';
-            repoNames.forEach(repo => {
-                const label = document.createElement('a');
-                label.htmlFor = repo.name;
-                label.textContent = repo.name;
-                label.href = '#';
-                label.onclick = () => {
-                    filteredRepos = "";
-                    filter = repo.name;
-                    repoNames.forEach(repo => {
-                        if (repo.name == filter) {
-                            filteredRepos = [repo];
-                        }
-                    });
-                    fetchAndDisplayCommits();
-                    modal.style.display = 'none';
-                };
-                label.style.display = 'block';
-                label.style.marginBottom = '10px';
-                label.style.backgroundColor = repo.color;
-                label.style.color = getBrightness(repo.color) > 155 ? 'black' : 'white';
-                label.id = "label";
-                radioContainer.appendChild(label);
+              listItem.appendChild(commitUser);
+              listItem.appendChild(commitMeta);
+              commitList.appendChild(listItem);
             });
-            modal.style.display = 'block';
-        });
+          })
+          .catch((error) => console.error("Error:", error));
+      };
 
-        // Handle reset button click
-        const resetButton = document.querySelector('.reset-button');
-        resetButton.addEventListener('click', () => {
-            filteredRepos = repoNames;
+      // Initialise commit list
+      fetchAndDisplayCommits();
+
+      // Handle filter button click
+      filterButton.addEventListener("click", () => {
+        const modal = document.getElementById("modal");
+        const radioContainer = document.getElementById("radioContainer");
+        radioContainer.innerHTML = "";
+        repoNames.forEach((repo) => {
+          const label = document.createElement("a");
+          label.htmlFor = repo.name;
+          label.textContent = repo.name;
+          label.href = "#";
+          label.onclick = () => {
+            filteredRepos = "";
+            filter = repo.name;
+            repoNames.forEach((repo) => {
+              if (repo.name == filter) {
+                filteredRepos = [repo];
+              }
+            });
             fetchAndDisplayCommits();
-            modal.style.display = 'none';
+            modal.style.display = "none";
+          };
+          label.style.display = "block";
+          label.style.marginBottom = "10px";
+          label.style.backgroundColor = repo.color;
+          label.style.color =
+            getBrightness(repo.color) > 155 ? "black" : "white";
+          label.id = "label";
+          radioContainer.appendChild(label);
         });
+        modal.style.display = "block";
+      });
 
-        // Handle close button click
-        const closeModalButton = document.querySelector('.close-button');
-        closeModalButton.addEventListener('click', () => {
-            const modal = document.getElementById('modal');
-            modal.style.display = 'none';
-        });
+      // Handle reset button click
+      const resetButton = document.querySelector(".reset-button");
+      resetButton.addEventListener("click", () => {
+        filteredRepos = repoNames;
+        fetchAndDisplayCommits();
+        modal.style.display = "none";
+      });
 
-        // Handle sort button click
-        sortButton.addEventListener('click', () => {
-            sortAsc = !sortAsc; // toggle the sorting order
-            fetchAndDisplayCommits(); // re-fetch and display commits
-        });
+      // Handle close button click
+      const closeModalButton = document.querySelector(".close-button");
+      closeModalButton.addEventListener("click", () => {
+        const modal = document.getElementById("modal");
+        modal.style.display = "none";
+      });
+
+      // Handle sort button click
+      sortButton.addEventListener("click", () => {
+        sortAsc = !sortAsc; // toggle the sorting order
+        fetchAndDisplayCommits(); // re-fetch and display commits
+      });
     </script>
-</body>
-
+  </body>
 </html>
